@@ -1,0 +1,369 @@
+<title>System Programming Test Study</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#f4f6f9; --sheet:#ffffff; --ink:#1b2230; --muted:#5d6779; --line:#d9dee7;
+  --accent:#2b4c9b; --accent-soft:#e6ecf8; --code:#f0f2f6;
+  --ok:#1f7a4a; --ok-soft:#e3f3ea; --bad:#b3261e; --bad-soft:#fbe6e4;
+  --sans:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#11151c; --sheet:#181d26; --ink:#e4e8ef; --muted:#97a1b3; --line:#2b3240;
+    --accent:#8aa8ee; --accent-soft:#1f2a42; --code:#11151c;
+    --ok:#5fcf8f; --ok-soft:#173326; --bad:#f08a80; --bad-soft:#3a1d1b;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11151c; --sheet:#181d26; --ink:#e4e8ef; --muted:#97a1b3; --line:#2b3240;
+  --accent:#8aa8ee; --accent-soft:#1f2a42; --code:#11151c;
+  --ok:#5fcf8f; --ok-soft:#173326; --bad:#f08a80; --bad-soft:#3a1d1b;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;padding:0 16px}
+.wrap{max-width:820px;margin:0 auto;padding-block:28px 60px}
+header{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:12px}
+h1{font-size:22px;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+.score{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums}
+.score b{color:var(--accent);font-size:20px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
+.tabs button,.actions button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);padding:6px 12px;border-radius:6px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--sheet)}
+.tabs .spacer{flex:1}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.week-head{margin:28px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:flex;gap:10px;align-items:baseline}
+.week-head strong{color:var(--ink);font-size:16px;letter-spacing:0;text-transform:none}
+.q{background:var(--sheet);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin-bottom:14px}
+.q h3{margin:0 0 6px;font-size:16px}
+.q h3 .no{font-family:var(--mono);color:var(--accent);margin-right:6px}
+.note{font-size:13px;color:var(--muted);background:var(--accent-soft);border-radius:6px;padding:8px 12px;margin:0 0 10px}
+.note ul{margin:0;padding-left:18px}
+.desc{margin:0 0 8px}
+pre{font-family:var(--mono);font-size:13px;background:var(--code);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;margin:0 0 12px;line-height:1.5}
+.blanks{display:grid;gap:8px}
+.blank{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:10px;align-items:center}
+.blank label{font-size:14px}
+.blank label code,.desc code{font-family:var(--mono);font-size:13px;background:var(--code);padding:0 4px;border-radius:3px}
+.blank input{font-family:var(--mono);font-size:14px;width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--sheet);color:var(--ink)}
+.blank input.ok{border-color:var(--ok);background:var(--ok-soft)}
+.blank input.bad{border-color:var(--bad);background:var(--bad-soft)}
+.ans{grid-column:2;font-family:var(--mono);font-size:12.5px;color:var(--ok);margin-top:-4px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.actions .primary{background:var(--accent);border-color:var(--accent);color:var(--sheet)}
+.result{font-size:13px;font-family:var(--mono)}
+.explain{margin-top:10px;font-size:13.5px;border-left:3px solid var(--ok);padding:4px 0 4px 10px;color:var(--ink)}
+@media (max-width:560px){.blank{grid-template-columns:1fr}.ans{grid-column:1}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>System Programming Test Study</h1>
+      <p class="sub">CSE3209 · Week 1 · 2 · 3 · 5 · 빈칸을 채우고 채점하세요. (대소문자·공백 무시)</p>
+    </div>
+    <div class="score">정답 <b id="sc">0</b> / <span id="tot">0</span></div>
+  </header>
+  <div class="tabs" id="tabs"></div>
+  <main id="list"></main>
+</div>
+
+<script>
+const WEEKS = {
+  1: "Ch1. A Tour of Computer Systems",
+  2: "Ch2. Bits, Bytes, and Integers",
+  3: "Ch2. Floating Point",
+  5: "Ch3. Machine-Level Representation Basics"
+};
+
+// b(label, answers...) : 빈칸 하나. answers 중 하나와 일치하면 정답.
+const b = (label, ...ans) => ({ label, ans });
+
+const Q = [
+// ───── Week 1
+{ w:1, sec:"Information Is Bits + Context",
+  note:["소스 파일의 각 문자는 ASCII 표준에 따라 1바이트 정수로 저장된다.","ASCII 문자로만 이루어진 파일은 text file, 그 외는 binary file."],
+  title:"hello.c의 첫 바이트들",
+  desc:"ASCII: '#'=0x23, 'c'=0x63, 'i'=0x69, 'n'=0x6e",
+  code:`$ xxd -l 4 hello.c
+00000000: 2369 6e63`,
+  blanks:[b("0x23 0x69 0x6e 0x63 → 문자열","#inc"), b("hello.c는 (text / binary)","text"), b("hello.o는 (text / binary)","binary")],
+  explain:"hello.c는 ASCII 문자로만 구성된 text file, 어셈블러가 만든 hello.o는 기계어가 담긴 binary file이다."},
+{ w:1, sec:"Compilation System",
+  note:["hello.c → [cpp] → hello.i → [cc1] → hello.s → [as] → hello.o → [ld] → hello"],
+  title:"단계별 명령어와 출력 파일",
+  code:`gcc -E hello.c -o hello.i   # (a) 단계
+gcc -S hello.c              # (b) 단계, 출력 파일 (c)
+gcc -c hello.c              # (d) 단계, 출력 파일 (e)
+gcc -o hello hello.c        # 마지막 단계 (f)`,
+  blanks:[b("(a) 단계","전처리","preprocessing","전처리기"), b("(b) 단계","컴파일","compilation","compile"), b("(c) 출력 파일","hello.s"),
+          b("(d) 단계","어셈블","어셈블리","assembly","assemble"), b("(e) 출력 파일","hello.o"), b("(f) 단계","링킹","링크","linking","link")],
+  explain:"-E: 전처리 → .i / -S: 컴파일 → .s / -c: 어셈블 → .o / 옵션 없이: 링킹 → 실행 파일"},
+{ w:1, sec:"Linking",
+  note:["링커(ld)는 여러 오브젝트 파일을 받아 하나의 실행 파일을 만든다."],
+  title:"Linker의 두 가지 역할",
+  code:`#include <stdio.h>
+int main() { printf("hello, world\\n"); return 0; }`,
+  blanks:[b("printf 같은 외부 참조를 실제 정의와 연결","symbol resolution","심볼해결","심볼 해결"), b("상대 주소를 조정해 하나로 합침","relocation","재배치"), b("리눅스 실행 파일 표준 포맷","elf")],
+  explain:"Symbol Resolution + Relocation → ELF(Executable and Linkable Format). readelf -h hello 로 헤더 확인."},
+{ w:1, sec:"Hardware Organization & Memory",
+  note:["레지스터는 CPU 내부의 초고속 저장 공간이다."],
+  title:"레지스터의 필요성",
+  desc:"<code>F = (X+Y) - (X*Y)</code> 를 계산한다. X, Y는 메모리에 있고 F도 메모리에 저장한다.",
+  code:`ADD  : X+Y
+MUL  : X*Y
+SUB  : (X+Y) - (X*Y)  → F`,
+  blanks:[b("레지스터 없이 매 연산마다 load/store 할 때 메모리 접근 횟수","9"), b("레지스터를 사용할 때 메모리 접근 횟수","3")],
+  explain:"레지스터가 없으면 연산 3번 × (load 2 + store 1) = 9번. 레지스터를 쓰면 X, Y load 2번 + F store 1번 = 3번."},
+{ w:1, sec:"Caches Matter",
+  note:["접근 패턴이 성능을 좌우한다. (2048×2048 배열 복사: 4.3ms vs 81.8ms)"],
+  title:"접근 패턴과 성능",
+  code:`void copyij() {                    void copyji() {
+  for (i = 0; i < 2048; i++)         for (j = 0; j < 2048; j++)
+    for (j = 0; j < 2048; j++)         for (i = 0; i < 2048; i++)
+      dst[i][j] = src[i][j];             dst[i][j] = src[i][j];
+}                                  }`,
+  blanks:[b("더 빠른 함수","copyij"), b("C 배열의 저장 순서 (____-major)","row","행"), b("캐시로 쓰이는 메모리","sram"), b("주기억장치로 쓰이는 메모리","dram")],
+  explain:"C 배열은 row-major로 저장되므로 j를 안쪽 루프로 돌려야 연속된 주소를 접근해 cache hit가 많다."},
+
+// ───── Week 2
+{ w:2, sec:"Two's-Complement",
+  note:["B2T: MSB의 가중치는 −2^(w−1), 나머지는 양수 가중치.","같은 비트 패턴도 signed/unsigned 해석에 따라 값이 다르다."],
+  title:"같은 비트, 다른 해석",
+  code:`int main() {
+    char c = 0xF6;
+    printf("%d %u\\n", c, (unsigned char)c);
+}`,
+  blanks:[b("Output","-10 246")],
+  explain:"0xF6 = 1111 0110 → signed: −128 + 118 = −10, unsigned: 246."},
+{ w:2, sec:"Byte Ordering",
+  note:["Little Endian: 최하위 바이트가 가장 낮은 주소에 저장 (x86-64)."],
+  title:"show_bytes",
+  code:`void show_bytes(unsigned char *start, size_t len) {
+    for (size_t i = 0; i < len; i++)
+        printf("%#.2x\\n", start[i]);
+}
+int main() {
+    int x = 0x12345678;
+    show_bytes((unsigned char *)&x, sizeof(int));
+}`,
+  blanks:[b("1번째 줄","0x78"), b("2번째 줄","0x56"), b("3번째 줄","0x34"), b("4번째 줄","0x12")],
+  explain:"Little Endian이므로 낮은 주소부터 78 56 34 12 순으로 출력된다."},
+{ w:2, sec:"Mixed Signed/Unsigned",
+  note:["signed와 unsigned가 섞이면 signed가 unsigned로 변환된다.","sizeof의 결과 타입은 size_t (unsigned long)."],
+  title:"sizeof 비교",
+  code:`int main() {
+    if (-1 < sizeof(int)) printf("yes\\n");
+    else                  printf("no\\n");
+}`,
+  blanks:[b("Output","no")],
+  explain:"−1이 unsigned long으로 변환되어 2^64−1이라는 아주 큰 값이 되므로 비교 결과는 거짓."},
+{ w:2, sec:"Expanding",
+  note:["Zero extension: unsigned 확장 (0으로 채움)","Sign extension: signed 확장 (MSB로 채움)"],
+  title:"short → int 확장",
+  code:`short s = -2;
+unsigned short us = 0xFFFE;
+int i = s;
+int j = us;
+printf("i=%d\\n", i); show_bytes(&i, 4);
+printf("j=%d\\n", j); show_bytes(&j, 4);`,
+  blanks:[b("i =","-2"), b("bytes of i (공백 구분)","0xfe 0xff 0xff 0xff","fe ff ff ff"), b("j =","65534"), b("bytes of j (공백 구분)","0xfe 0xff 0x00 0x00","fe ff 00 00")],
+  explain:"s는 signed라 sign extension(1로 채움) → −2 유지. us는 unsigned라 zero extension → 65534."},
+{ w:2, sec:"Shift and Division",
+  note:["음수 signed의 >>는 arithmetic shift → 내림(round down).","C의 정수 나눗셈 /는 0 방향으로 버림(round toward zero)."],
+  title:"Shift vs Division",
+  code:`int x = -17;
+printf("x>>2 = %d\\n", x >> 2);
+printf("x/4  = %d\\n", x / 4);`,
+  blanks:[b("x>>2 =","-5"), b("x/4 =","-4")],
+  explain:"−17/4 = −4.25. shift는 내림해서 −5, 나눗셈은 0 방향 버림이라 −4."},
+
+// ───── Week 3
+{ w:3, sec:"IEEE 754",
+  note:["Single: 1 sign + 8 exponent + 23 fraction, bias = 127","Value = (−1)^S × M × 2^E, Normalized: M = 1.f, E = e − bias"],
+  title:"10진수 → 비트 패턴",
+  code:`float f = -6.5f;
+(gdb) x /wt &f
+_ ________ _______________________
+(gdb) x /wx &f
+0x________`,
+  blanks:[b("비트 패턴 (s e f)","1 10000001 10100000000000000000000"), b("hex","0xc0d00000","c0d00000")],
+  explain:"6.5 = 110.1₂ = 1.101₂ × 2² → S=1, e = 2+127 = 129 = 10000001, f = 101000…"},
+{ w:3, sec:"IEEE 754",
+  note:["Interpretation: 비트 → S, e, f → E = e − bias, M = 1.f"],
+  title:"비트 패턴 → 10진수",
+  code:`(gdb) x /wx &g
+0x3f400000`,
+  blanks:[b("S","0"), b("e (10진수)","126"), b("E","-1"), b("M (2진수)","1.1","1.1(2)"), b("g","0.75")],
+  explain:"0 01111110 1000… → E = 126 − 127 = −1, M = 1.1₂ = 1.5 → 1.5 × 2⁻¹ = 0.75"},
+{ w:3, sec:"Denormalized / Special Values",
+  note:["Denormalized(e = 0): M = 0.f, E = 1 − bias","e = 모두 1: f = 0이면 ±∞, f ≠ 0이면 NaN"],
+  title:"8-bit floating point (s:1, e:4, f:3, bias = 7)",
+  code:`가장 작은 양의 denormalized  0 0000 001  →  (a)
+가장 큰 denormalized         0 0000 111  →  (b)
+가장 작은 양의 normalized    (c)         →  (d)
+가장 큰 normalized           (e)         →  (f)
++∞                           (g)`,
+  blanks:[b("(a) 값 (분수)","1/512"), b("(b) 값 (분수)","7/512"), b("(c) 비트","0 0001 000"), b("(d) 값 (분수)","1/64"),
+          b("(e) 비트","0 1110 111"), b("(f) 값","240"), b("(g) 비트","0 1111 000")],
+  explain:"denorm: 0.f × 2^(1−7) = f/8 × 1/64. 최대 normalized: e=14 → E=7, M=1.111₂=15/8 → 15/8 × 128 = 240."},
+{ w:3, sec:"Rounding",
+  note:["기본 반올림 모드: Round-to-even (정확히 중간값이면 짝수 쪽으로)"],
+  title:"Round-to-even",
+  code:`printf("%.0f %.0f %.0f %.0f\\n", 0.5, 1.5, 2.5, 3.5);`,
+  blanks:[b("Output","0 2 2 4")],
+  explain:"0.5→0, 1.5→2, 2.5→2, 3.5→4 : 모두 가장 가까운 짝수로 반올림."},
+{ w:3, sec:"FP Arithmetic Properties",
+  note:["부동소수점 덧셈은 교환법칙은 성립하지만 결합법칙은 성립하지 않는다."],
+  title:"Associativity",
+  code:`float a = 1e20f, b = -1e20f, c = 3.14f;
+printf("%f\\n", (a + b) + c);
+printf("%f\\n", a + (b + c));`,
+  blanks:[b("1번째 줄","3.140000","3.14"), b("2번째 줄","0.000000","0")],
+  explain:"b + c 에서 3.14는 1e20에 비해 너무 작아 반올림으로 사라진다 → a + b = 0."},
+
+// ───── Week 5
+{ w:5, sec:"Assembly Syntax",
+  note:["AT&T: mov src, dst / % 레지스터 / () 메모리","Intel: mov dst, src / [] 메모리 — 같은 기계어로 어셈블된다."],
+  title:"AT&T → Intel 변환 (objdump -M intel -d)",
+  code:`AT&T                          Intel
+mov (%rdi),%rax               mov rax,QWORD PTR [rdi]
+mov %rdx,(%rsi)               (a)
+mov %rax,0x8(%rdi,%rsi,8)     (b)`,
+  blanks:[b("(a)","mov qword ptr [rsi],rdx"), b("(b)","mov qword ptr [rdi+rsi*8+0x8],rax")],
+  explain:"Intel은 operand 순서가 반대이고, 메모리는 [base + index*scale + disp] 로 쓴다."},
+{ w:5, sec:"Operand Forms",
+  note:["$imm → imm, %r → R[r], imm → M[imm]","Imm(rb,ri,s) → M[Imm + R[rb] + R[ri]×s]"],
+  title:"Operand Value",
+  code:`Register  Value        Address  Value
+%rax      0x100        0x100    0xFF
+%rcx      0x1          0x104    0xAB
+%rdx      0x3          0x108    0x13
+                       0x10C    0x11`,
+  blanks:[b("<code>%rax</code>","0x100"), b("<code>0x104</code>","0xab"), b("<code>$0x108</code>","0x108"), b("<code>(%rax)</code>","0xff"),
+          b("<code>4(%rax)</code>","0xab"), b("<code>9(%rax,%rdx)</code>","0x11"), b("<code>0xFC(,%rcx,4)</code>","0xff"), b("<code>(%rax,%rdx,4)</code>","0x11")],
+  explain:"9(%rax,%rdx) = 9+0x100+3 = 0x10C / 0xFC(,%rcx,4) = 0xFC+4 = 0x100 / (%rax,%rdx,4) = 0x100+12 = 0x10C"},
+{ w:5, sec:"Calling Convention",
+  note:["인자: %rdi, %rsi, %rdx, %rcx, %r8, %r9 순서 / 반환값: %rax"],
+  title:"5번째, 6번째 인자",
+  code:`void func(long a, long b, long c, long d, long e, long *p)
+{
+    *p = e;          mov  (a),(b)
+}                    retq`,
+  blanks:[b("(a)","%r8"), b("(b)","(%r9)")],
+  explain:"e는 5번째 인자 → %r8, p는 6번째 인자 → %r9. *p 이므로 (%r9)."},
+{ w:5, sec:"C → Machine Code",
+  note:["배열 원소 주소 = base + index × sizeof(type)"],
+  title:"Displacement / Scaled Indexed",
+  code:`void f1(long *xp, long y)        mov  (a),(b)
+{ xp[2] = y; }                   retq
+
+long f2(long *xp, long i)        mov  (c),%rax
+{ return xp[i + 1]; }            retq`,
+  blanks:[b("(a)","%rsi"), b("(b)","0x10(%rdi)","16(%rdi)"), b("(c)","0x8(%rdi,%rsi,8)","8(%rdi,%rsi,8)")],
+  explain:"xp[2] = xp + 2×8 = 0x10(%rdi). xp[i+1] = xp + 8 + i×8 = 0x8(%rdi,%rsi,8)."},
+{ w:5, sec:"mov 제약",
+  note:["Immediate는 src로만 사용 가능","src, dst 중 최대 하나만 memory","scale은 1, 2, 4, 8 중 하나"],
+  title:"잘못된 명령어 찾기 (O / X)",
+  code:`(a) movq %rax,$0x10
+(b) movq (%rax),(%rdx)
+(c) movq (%rax,%rdx,3),%rcx
+(d) movq $-1,(%rdi,%rsi,8)
+(e) movq 0x10(,%rdx,2),%rax`,
+  blanks:[b("(a)","x"), b("(b)","x"), b("(c)","x"), b("(d)","o"), b("(e)","o")],
+  explain:"(a) dst에 immediate 불가 (b) memory→memory 불가 (c) scale 3 불가 (d)(e) 올바름"}
+];
+
+const norm = s => s.toLowerCase().replace(/[\s`]/g, "");
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const state = {}; // qIndex -> true(정답) / false
+let filter = "all";
+
+function render() {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  let lastW = null, n = 0;
+  Q.forEach((q, qi) => {
+    if (filter !== "all" && q.w !== +filter) return;
+    if (q.w !== lastW) {
+      lastW = q.w; n = 0;
+      list.insertAdjacentHTML("beforeend", `<div class="week-head">Week ${q.w} <strong>${WEEKS[q.w]}</strong></div>`);
+    }
+    n++;
+    const el = document.createElement("section");
+    el.className = "q";
+    el.innerHTML = `
+      <h3><span class="no">Q${n}</span>${esc(q.title)}</h3>
+      <div class="note"><b>§ ${esc(q.sec)}</b><ul>${q.note.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+      ${q.desc ? `<p class="desc">${q.desc}</p>` : ""}
+      <pre>${esc(q.code)}</pre>
+      <div class="blanks">${q.blanks.map((bl, bi) => `
+        <div class="blank">
+          <label for="q${qi}b${bi}">${bl.label}</label>
+          <input id="q${qi}b${bi}" autocomplete="off" spellcheck="false">
+          <div class="ans" hidden>정답: ${esc(bl.ans[0])}</div>
+        </div>`).join("")}</div>
+      <div class="actions">
+        <button class="primary" data-act="check">채점</button>
+        <button data-act="show">정답 보기</button>
+        <button data-act="reset">초기화</button>
+        <span class="result"></span>
+      </div>
+      <div class="explain" hidden>${esc(q.explain)}</div>`;
+    el.querySelector('[data-act="check"]').onclick = () => check(el, q, qi);
+    el.querySelector('[data-act="show"]').onclick = () => {
+      el.querySelectorAll(".ans").forEach(a => a.hidden = false);
+      el.querySelector(".explain").hidden = false;
+    };
+    el.querySelector('[data-act="reset"]').onclick = () => {
+      el.querySelectorAll("input").forEach(i => { i.value = ""; i.className = ""; });
+      el.querySelectorAll(".ans").forEach(a => a.hidden = true);
+      el.querySelector(".explain").hidden = true;
+      el.querySelector(".result").textContent = "";
+      delete state[qi]; updateScore();
+    };
+    el.querySelectorAll("input").forEach(i => i.addEventListener("keydown", e => { if (e.key === "Enter") check(el, q, qi); }));
+    list.appendChild(el);
+  });
+  updateScore();
+}
+
+function check(el, q, qi) {
+  let ok = 0;
+  q.blanks.forEach((bl, bi) => {
+    const inp = el.querySelector(`#q${qi}b${bi}`);
+    const right = bl.ans.some(a => norm(a) === norm(inp.value));
+    inp.className = right ? "ok" : "bad";
+    if (right) ok++;
+  });
+  const all = ok === q.blanks.length;
+  el.querySelector(".result").textContent = `${ok} / ${q.blanks.length} ${all ? "✓ 정답" : ""}`;
+  if (all) el.querySelector(".explain").hidden = false;
+  state[qi] = all; updateScore();
+}
+
+function updateScore() {
+  const idx = Q.map((q, i) => i).filter(i => filter === "all" || Q[i].w === +filter);
+  document.getElementById("sc").textContent = idx.filter(i => state[i]).length;
+  document.getElementById("tot").textContent = idx.length;
+}
+
+const tabs = document.getElementById("tabs");
+[["all","전체"], ...Object.keys(WEEKS).map(w => [w, `Week ${w}`])].forEach(([k, label]) => {
+  const bt = document.createElement("button");
+  bt.textContent = label;
+  bt.setAttribute("aria-pressed", k === filter);
+  bt.onclick = () => {
+    filter = k;
+    tabs.querySelectorAll("button[aria-pressed]").forEach(x => x.setAttribute("aria-pressed", x === bt));
+    render();
+  };
+  tabs.appendChild(bt);
+});
+
+render();
+</script>

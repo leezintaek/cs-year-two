@@ -48,7 +48,7 @@
 
 **예시**: "모든 인간은 죽는다"와 "소크라테스는 인간이다" → "소크라테스는 죽는다"
 - 지식: 두 명제 자체
-- 지식 표현: ∀x Human(x) → Mortal(x), Human(Socrates) (술어 논리 형태)
+- 지식 표현: ∀x(모든) Human(x) → Mortal(x), Human(Socrates) (술어 논리 형태)
 - 지식 베이스: 위 두 식의 집합
 - 추론: Mortal(Socrates)라는 새로운 사실을 이끌어냄
 
