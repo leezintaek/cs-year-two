@@ -249,7 +249,7 @@ long f4(long cnt) {
 
 ```c
 for (init-expr; test-expr; update-expr)
-    body-statement
+    body-statementF
 ```
 ```
     init-expr;

@@ -318,7 +318,7 @@ rmse = (total_squared_error / len(y_test)) ** 0.5
 - 텍스트 규칙 출력: `sklearn.tree.export_text(model, feature_names=list(X.columns))`
 
 ---
-
+ 
 ## 참고: 공지사항 (수업 운영 관련, 참고용)
 
 - **강의 계획**: 5주 기계학습 기초 → 6주 신경망(1) (과제 1 마감) → 7주 신경망(2) → 8주 중간고사. (상황에 따라 변경될 수 있음)
