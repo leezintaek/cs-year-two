@@ -152,3 +152,160 @@ Fixed    : [Opcode][Operand 1][Operand 2][Operand 3]
 |---|---|---|
 | 장점 | 자주 쓰는 명령어를 짧게 만들 수 있다 → **코드 크기가 작다** | 다음 명령어 위치가 항상 `PC + 4`다 → **fetch·decode가 단순하고 빠르며 pipeline에 유리하다** |
 | 단점 | 앞 명령어를 decode해야 다음 명령어의 시작 위치를 알 수 있다 → **decoder가 복잡하다** | 짧게 표현할 수 있는 명령어도 4바이트를 다 쓴다 → **코드가 커진다**, 큰 상수를 한 번에 못 넣는다 |
+
+## Q5. [TF_quiz Q6] `%rdx = 0xf000`, `%rcx = 0x100`일 때 `-0x8(%rdx,%rcx,4)`의 주소가 `0xf408`이 아닌 이유는?
+
+**정답: F** (실제 주소는 `0xf3f8`)
+
+scaled indexed addressing mode `Imm(rb, ri, s)` → 주소 = `Imm + R[rb] + R[ri] × s`
+
+```
+  0xf000          (R[rb] = %rdx)
++ 0x0400          (R[ri] × s = 0x100 × 4)
+- 0x0008          (Imm = -0x8)
+--------
+  0xf3f8
+```
+
+**함정 포인트**
+- displacement(Imm)는 **음수도 가능**하다. `-0x8`을 `+0x8`로 계산하면 `0xf408`이 나온다.
+- 16진수 뺄셈: `0xf400 - 0x8`에서 하위 자리 `0x00 - 0x08`은 borrow가 생겨 `0xf3f8`이 된다 (`0x100 - 0x8 = 0xf8`).
+
+## Q6. [TF_quiz Q15] `x*3`을 계산할 때 `lea (,%rdi,3),%rax`가 생성될 수 없는 이유는?
+
+**정답: F**
+
+- scaled indexed addressing mode `Imm(rb, ri, s)`의 scale factor `s`는 **1, 2, 4, 8 중 하나만** 가능하다 (하드웨어 인코딩이 2비트로 정해져 있음).
+- 따라서 `(,%rdi,3)`은 존재하지 않는 operand이다.
+
+**실제로 생성되는 코드**
+```
+lea (%rdi,%rdi,2),%rax    # rax = x + x*2 = 3x
+```
+- base 레지스터와 index 레지스터에 **같은 레지스터**를 넣고 scale 2를 쓰면 `x + 2x = 3x`가 된다.
+
+**같은 원리로 만들 수 있는 배수**
+
+| 배수 | 코드                       |
+|------|----------------------------|
+| 3    | `lea (%rdi,%rdi,2),%rax`   |
+| 5    | `lea (%rdi,%rdi,4),%rax`   |
+| 9    | `lea (%rdi,%rdi,8),%rax`   |
+
+- 이보다 큰 배수는 `lea` + `shl`을 조합한다. 예: `x*12` = `lea (%rdi,%rdi,2)` 후 `shl $2` (강의 Problem 3-3), `x*48` = `lea (%rdi,%rdi,2)` 후 `shl $4`
+
+## Q7. [TF_quiz Q21] x86-64/Linux calling convention에서 5번째 정수 인자가 `%r8`로 전달되는 이유는?
+
+**정답: T**
+
+정수(및 포인터) 인자는 왼쪽부터 순서대로 아래 6개 레지스터에 들어간다.
+
+| 순서 | 레지스터 |
+|------|----------|
+| 1    | `%rdi`   |
+| 2    | `%rsi`   |
+| 3    | `%rdx`   |
+| 4    | `%rcx`   |
+| 5    | `%r8`    |
+| 6    | `%r9`    |
+| 7~   | stack    |
+
+- 반환값은 `%rax`
+- 7번째 인자부터는 레지스터가 아니라 **stack**으로 전달된다.
+
+**외우는 팁**
+- "**D**iane's **S**ilk **D**ress **C**osts **$8 9**" → **di, si, dx, cx, 8, 9**
+- 3번째(`%rdx`)와 4번째(`%rcx`)가 알파벳 순서와 반대라 헷갈리기 쉽다.
+
+## Q8. [TF_quiz Q27] `void f(){ long ret = *((long *)0x104); }`를 `-Og`로 컴파일하면 `retq` 한 줄만 남는 이유는?
+
+**정답: T**
+
+- `ret`에 메모리 값을 읽어 넣지만, 그 값을 **반환하지도, 다른 곳에 저장하지도, 출력하지도 않는다.**
+- 이렇게 결과가 프로그램의 동작에 아무 영향을 주지 않는 코드를 **dead code**라고 하며, 컴파일러 최적화가 제거한다.
+- `-Og`도 최적화 옵션이므로(디버깅에 지장 없는 수준) 이런 코드는 제거된다.
+
+**강의 비교: `f4` vs `f4dummy`**
+
+```c
+long f4()     { long ret = *((long *)0x104); return ret; }
+void f4dummy(){ long ret = *((long *)0x104); }
+```
+```
+f4:       mov 0x104,%rax     # 반환값이므로 %rax에 load
+          retq
+f4dummy:  retq               # 결과를 안 쓰므로 load 자체가 사라짐
+```
+
+- `f4`는 읽은 값을 **반환**하므로 calling convention에 따라 `%rax`에 load해야 한다.
+- 즉 "같은 C 문장이라도 그 결과가 **쓰이는지**에 따라 어셈블리가 달라진다."
+
+## Q9. [TF_quiz Q33] `%rip`에 현재 실행 중인 명령어의 주소가 저장된다는 말이 틀린 이유는?
+
+**정답: F** (`%rip`는 **다음에 실행할 명령어**의 주소를 담는다)
+
+- 강의: "%rip: Instruction Pointer — Holds the address of the **next instruction** to be executed."
+- CPU는 명령어를 fetch하면 그 명령어의 길이만큼 `%rip`를 바로 증가시킨다. 그래서 명령어가 실행되는 시점에 `%rip`는 이미 다음 명령어를 가리킨다.
+
+```
+0x0: 48 8b 07   mov (%rdi),%rax    ← 실행 중일 때 %rip = 0x3
+0x3: 48 8b 16   mov (%rsi),%rdx
+```
+
+**이것이 중요한 이유**
+- **jump**: `jmp`, `jle` 등은 `%rip`를 목적지 주소로 바꿔서 흐름을 바꾼다. 점프하지 않으면 그대로 다음 명령어가 실행된다.
+- **rip-relative 주소**: week1의 `leaq .LC0(%rip),%rax`처럼 `%rip` 기준으로 주소를 계산할 때, 기준은 **다음 명령어의 주소**이다.
+- x86-64 ISA에서 `%rip`는 일반 레지스터처럼 `mov`로 직접 바꿀 수 없고, `jmp`/`call`/`ret` 같은 제어 흐름 명령어로만 바뀐다.
+
+## Q10. [TF_quiz Q41] "CISC는 고정 길이, RISC는 가변 길이 인코딩을 사용한다"가 틀린 이유는?
+
+**정답: F** (설명이 **반대로** 되어 있다)
+
+| 구분            | CISC                     | RISC                    |
+|-----------------|--------------------------|-------------------------|
+| 명령어 수       | 많음 (문서 1,200쪽 이상) | 적음 (보통 100개 미만)  |
+| 인코딩 길이     | **가변 (1~15바이트)**    | **고정 (보통 4바이트)** |
+| 코드 크기       | 작음                     | 큼                      |
+| 하드웨어        | 복잡                     | 단순                    |
+| 예시            | x86, x86-64              | ARM, MIPS, RISC-V       |
+
+**실제 x86-64 인코딩에서 확인**
+```
+0: 48 8b 07     mov (%rdi),%rax     ← 3바이트
+c: c3           retq                ← 1바이트
+0: 48 c7 c0 ff ff ff ff  mov $-1,%rax  ← 7바이트
+```
+- 명령어마다 길이가 다르다 → x86-64는 가변 길이(CISC)
+
+**외우는 방법**
+- CISC = **C**omplex → 복잡한 명령어가 많고 길이도 제각각
+- RISC = **R**educed → 명령어를 줄이고 단순화 → 길이도 통일
+- 고정 길이/가변 길이의 장단점은 `week5/qna.md` Q4 참고
+
+## Q11. [TF_quiz Q48] AT&T 문법과 Intel 문법으로 쓴 같은 코드가 동일한 기계어 바이너리를 만드는 이유는?
+
+**정답: T**
+
+- AT&T와 Intel은 **같은 기계어를 사람이 읽도록 표기하는 방식(syntax)**만 다르다.
+- 실제 CPU가 실행하는 것은 바이트 값(opcode + operand 인코딩)이고, 이는 ISA(x86-64)가 정한다. 표기법과는 무관하다.
+
+**강의 예시: 같은 바이트, 다른 표기**
+```
+$ objdump -d ex1.o                  $ objdump -M intel -d ex1.o
+0: 48 8b 07  mov (%rdi),%rax        0: 48 8b 07  mov rax,QWORD PTR [rdi]
+3: 48 8b 16  mov (%rsi),%rdx        3: 48 8b 16  mov rdx,QWORD PTR [rsi]
+6: 48 89 17  mov %rdx,(%rdi)        6: 48 89 17  mov QWORD PTR [rdi],rdx
+```
+- 왼쪽 바이트(`48 8b 07` 등)가 **완전히 같다.** 같은 object file을 두 가지 방식으로 보여준 것뿐이다.
+
+**두 문법의 차이**
+
+| 항목          | AT&T              | Intel                     |
+|---------------|-------------------|---------------------------|
+| operand 순서  | `mov src, dst`    | `mov dst, src`            |
+| 레지스터      | `%rax`            | `rax`                     |
+| 즉시값        | `$0x10`           | `0x10`                    |
+| 메모리        | `(%rdi)`          | `QWORD PTR [rdi]`         |
+| 사용 환경     | Linux, macOS      | Windows, Intel 문서       |
+
+- gdb에서도 `set disassembly-flavor intel` / `att`로 전환할 수 있다.
