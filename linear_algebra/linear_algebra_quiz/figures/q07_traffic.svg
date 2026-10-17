@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="420" viewBox="0 0 560 420" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#222"/>
+    </marker>
+  </defs>
+  <rect width="560" height="420" fill="#fff"/>
+  <!-- internal roads -->
+  <line x1="170" y1="110" x2="380" y2="110" stroke="#1f5fbf" stroke-width="3" marker-end="url(#ar)"/>
+  <line x1="400" y1="130" x2="400" y2="290" stroke="#1f5fbf" stroke-width="3" marker-end="url(#ar)"/>
+  <line x1="380" y1="310" x2="170" y2="310" stroke="#1f5fbf" stroke-width="3" marker-end="url(#ar)"/>
+  <line x1="150" y1="290" x2="150" y2="130" stroke="#1f5fbf" stroke-width="3" marker-end="url(#ar)"/>
+  <text x="275" y="100" font-size="20" fill="#1f5fbf" text-anchor="middle" font-style="italic">x₁</text>
+  <text x="412" y="215" font-size="20" fill="#1f5fbf" font-style="italic">x₂</text>
+  <text x="275" y="335" font-size="20" fill="#1f5fbf" text-anchor="middle" font-style="italic">x₃</text>
+  <text x="118" y="215" font-size="20" fill="#1f5fbf" font-style="italic">x₄</text>
+  <!-- external roads -->
+  <line x1="150" y1="20" x2="150" y2="90" stroke="#222" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="158" y="40" font-size="16">400</text>
+  <line x1="130" y1="110" x2="40" y2="110" stroke="#222" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="60" y="100" font-size="16">250</text>
+  <line x1="400" y1="20" x2="400" y2="90" stroke="#222" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="408" y="40" font-size="16">300</text>
+  <line x1="420" y1="110" x2="520" y2="110" stroke="#222" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="470" y="100" font-size="16">500</text>
+  <line x1="520" y1="310" x2="420" y2="310" stroke="#222" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="470" y="300" font-size="16">350</text>
+  <line x1="400" y1="330" x2="400" y2="400" stroke="#222" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="408" y="385" font-size="16">200</text>
+  <line x1="40" y1="310" x2="130" y2="310" stroke="#222" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="60" y="300" font-size="16">200</text>
+  <line x1="150" y1="330" x2="150" y2="400" stroke="#222" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="158" y="385" font-size="16">300</text>
+  <!-- intersections -->
+  <circle cx="150" cy="110" r="16" fill="#fff" stroke="#222" stroke-width="2"/>
+  <text x="150" y="116" font-size="16" text-anchor="middle" font-weight="bold">A</text>
+  <circle cx="400" cy="110" r="16" fill="#fff" stroke="#222" stroke-width="2"/>
+  <text x="400" y="116" font-size="16" text-anchor="middle" font-weight="bold">B</text>
+  <circle cx="400" cy="310" r="16" fill="#fff" stroke="#222" stroke-width="2"/>
+  <text x="400" y="316" font-size="16" text-anchor="middle" font-weight="bold">C</text>
+  <circle cx="150" cy="310" r="16" fill="#fff" stroke="#222" stroke-width="2"/>
+  <text x="150" y="316" font-size="16" text-anchor="middle" font-weight="bold">D</text>
+</svg>

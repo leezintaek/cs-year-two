@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="340" viewBox="0 0 560 340" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/>
+    </marker>
+  </defs>
+  <rect width="560" height="340" fill="#fff"/>
+  <g stroke="#222" stroke-width="2" fill="none">
+    <!-- top & bottom wires -->
+    <line x1="100" y1="40" x2="460" y2="40"/>
+    <line x1="100" y1="300" x2="460" y2="300"/>
+    <!-- left branch: R1 then battery E1 -->
+    <line x1="100" y1="40" x2="100" y2="90"/>
+    <polyline points="100,90 88,97 112,109 88,121 112,133 88,145 100,150"/>
+    <line x1="100" y1="150" x2="100" y2="195"/>
+    <line x1="100" y1="215" x2="100" y2="300"/>
+    <!-- middle branch: R2 -->
+    <line x1="280" y1="40" x2="280" y2="130"/>
+    <polyline points="280,130 268,137 292,149 268,161 292,173 268,185 280,190"/>
+    <line x1="280" y1="190" x2="280" y2="300"/>
+    <!-- right branch: R3 then battery E2 -->
+    <line x1="460" y1="40" x2="460" y2="90"/>
+    <polyline points="460,90 448,97 472,109 448,121 472,133 448,145 460,150"/>
+    <line x1="460" y1="150" x2="460" y2="195"/>
+    <line x1="460" y1="215" x2="460" y2="300"/>
+  </g>
+  <!-- batteries: long plate (+) on top, short plate (-) below -->
+  <line x1="78" y1="195" x2="122" y2="195" stroke="#222" stroke-width="3"/>
+  <line x1="90" y1="215" x2="110" y2="215" stroke="#222" stroke-width="6"/>
+  <text x="128" y="193" font-size="16">+</text>
+  <text x="116" y="228" font-size="18">−</text>
+  <line x1="438" y1="195" x2="482" y2="195" stroke="#222" stroke-width="3"/>
+  <line x1="450" y1="215" x2="470" y2="215" stroke="#222" stroke-width="6"/>
+  <text x="488" y="193" font-size="16">+</text>
+  <text x="476" y="228" font-size="18">−</text>
+  <!-- labels -->
+  <text x="122" y="125" font-size="16">R₁ = 1Ω</text>
+  <text x="128" y="212" font-size="16">E₁ = 20V</text>
+  <text x="302" y="165" font-size="16">R₂ = 2Ω</text>
+  <text x="372" y="125" font-size="16">R₃ = 3Ω</text>
+  <text x="370" y="212" font-size="16">E₂ = 6V</text>
+  <!-- currents -->
+  <line x1="60" y1="280" x2="60" y2="230" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="30" y="262" font-size="17" fill="#c0392b" font-style="italic">I₁</text>
+  <line x1="250" y1="220" x2="250" y2="270" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="220" y="250" font-size="17" fill="#c0392b" font-style="italic">I₂</text>
+  <line x1="510" y1="280" x2="510" y2="230" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="520" y="262" font-size="17" fill="#c0392b" font-style="italic">I₃</text>
+  <!-- nodes -->
+  <circle cx="280" cy="40" r="4" fill="#222"/>
+  <text x="274" y="28" font-size="16" font-weight="bold">P</text>
+  <circle cx="280" cy="300" r="4" fill="#222"/>
+  <text x="274" y="324" font-size="16" font-weight="bold">Q</text>
+</svg>
