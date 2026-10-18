@@ -261,3 +261,50 @@ long q4(long a, long b, long c) {
 
 **signed였다면**
 - `long *x, int y` → `movslq %esi,%rsi` (`f7`) — sign extension은 상위를 1로 채울 수도 있으므로 전용 명령어가 필요하다.
+
+## Q10. [SP 3-4 No.5 Q6] `xorq %rsi, %rdi`를 하면 결과는 `%rdi`에 저장되는데, 주석은 왜 `t1 = x ^ y`인가?
+
+**결론: 결과는 `%rdi`에 저장되는 게 맞다. 컴파일러가 `t1`을 `%rdi`에 배치한 것이다.**
+
+**`t1`은 메모리 공간이 아니다**
+- `t1`은 C 코드의 변수 **이름**일 뿐이고, 어셈블리에는 변수가 없다.
+- 컴파일러가 각 변수를 어떤 레지스터에 둘지 정한다 (**register allocation**).
+- 주석 `# t1 = x ^ y`는 "이 시점부터 `%rdi`가 `t1`을 담고 있다"는 뜻이다.
+
+**왜 `%rdi`를 재사용하나**
+- `x`는 `t1`을 계산하는 데만 쓰이고 이후 다시 쓰이지 않는다.
+- 그래서 `x`가 있던 `%rdi`를 덮어써 `t1`을 저장해도 된다 → 레지스터 절약
+
+**레지스터별 의미 변화**
+
+| 명령어                 | `%rdi` | `%rax` |
+|------------------------|--------|--------|
+| 시작                   | x      | ?      |
+| `xorq %rsi,%rdi`       | t1     | ?      |
+| `leaq (%rdx,%rdx,2)`   | t1     | 3z     |
+| `salq $4,%rax`         | t1     | t2     |
+| `andl $252645135,%edi` | t3     | t2     |
+| `subq %rdi,%rax`       | t3     | t4     |
+
+- `andl`도 같은 방식으로 `%rdi`(`t1`) 자리에 `t3`를 덮어쓴다.
+- `t2`와 `t4`는 `%rax`를 함께 쓴다. 마지막 결과 `t4`가 `%rax`에 남으므로 그대로 반환값이 된다.
+- AT&T 문법의 2-operand 연산 `op S, D`는 **D = D op S**이므로 결과는 항상 두 번째 operand에 저장된다.
+
+## Q11. [SP 연습 문제 P25] 확장할 때 `l`(32비트 dest) 버전 대신 `q`(64비트 dest) 버전을 써도 되나?
+
+**결론: zero extension은 둘 다 되지만, sign extension은 반드시 `q` 버전이어야 한다.**
+
+**zero extension (`movz`) — 둘 다 OK**
+- `movzwl %si,%esi`: 32비트 레지스터에 쓰면 상위 32비트가 자동으로 0 → `%rsi` 전체가 zero extension된 값
+- `movzwq %si,%rsi`: 처음부터 64비트로 0을 채움 → **결과가 같다**
+- 컴파일러가 `l`을 고르는 이유: 64비트 operand에 필요한 REX.W prefix가 없어 **인코딩이 1바이트 짧다**.
+- 같은 이유로 `movzbl`(g2, f9) 대신 `movzbq`를 써도 결과는 같다.
+
+**sign extension (`movs`) — `l` 버전을 쓰면 틀림**
+- `y = -1` (`%si = 0xFFFF`)일 때 `long *x`에 저장하는 경우 (f6)
+  - `movswq %si,%rsi` → `%rsi = 0xFFFFFFFFFFFFFFFF` = -1 (정답)
+  - `movswl %si,%esi` → `%esi = 0xFFFFFFFF`이지만, 32비트 쓰기 규칙 때문에 상위 32비트는 **0** → `%rsi = 0x00000000FFFFFFFF` = 4294967295 (오답)
+- 32비트 쓰기가 상위를 0으로 채우는 규칙은 zero extension과만 맞아떨어진다. 그래서 sign extension에는 64비트 dest 전용 명령어(`movswq`, `movsbq`, `movslq`)가 필요하다.
+- 단, dest 자체가 `int *`(4바이트)라면 `movswl`이 정답이다 (상위 32비트는 저장되지 않으므로).
+
+**관련:** Q5(`movzlq`가 없는 이유), Q9(f11)
