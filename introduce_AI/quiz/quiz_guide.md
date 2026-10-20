@@ -24,3 +24,4 @@
 |-------------|-------------------------|------|---------------------|
 | `quiz_1.md` | `quiz_1_explanation.md` | 50   | week1~7 + 실습 코드 |
 | `quiz_2.md` | `quiz_2_explanation.md` | 50   | week1~7 + 실습 코드 |
+| `quiz_3.md` | `quiz_3_explanation.md` | 50   | week1~7 + 실습 코드 |
