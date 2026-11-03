@@ -15,7 +15,6 @@
 - 난이도: 어렵게
 - 출제 중 모르거나 고민되는 부분은 사용자에게 물어보고 진행한다.
 - 파일 위치: `quiz/quiz_N.md`(문제), `quiz/quiz_N_explanation.md`(정답 + 해설)
-- 퀴즈 문항에 대한 질문·자세한 해설 요청은 `quiz/qna.md`에 누적 기록한다 (문항 앞에 `[quiz_N]` 표시).
 - 참고: 강의 공지상 중간고사 범위는 Problem Solving(week2) ~ Neural Networks(week7)
 
 ## 퀴즈 목록

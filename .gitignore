@@ -1,1 +1,10 @@
 .DS_Store
+/_workspace/
+/_tools/transcription/.venv/
+__pycache__/
+/introduce_AI/project/
+*.transcript.md
+.env
+.env.*
+*.key
+*.pem
