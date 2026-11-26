@@ -2,9 +2,10 @@
 /_workspace/
 /_tools/transcription/.venv/
 __pycache__/
-/introduce_AI/project/
+/introduce_AI/2_project/
 *.transcript.md
 .env
 .env.*
 *.key
 *.pem
+/system_program/족보/*.pdf
